@@ -2,8 +2,13 @@
 # Cookbook Name:: windows_network
 # Recipe:: default
 #
-# Copyright 2014, Proxmea BV
+# License: Apache license 2
 #
+# Authors
+# Christoffer Järnåker, Proxmea BV, 2014
+# Christoffer Järnåker, Schuberg Philis, 2014
+#
+
 def getnetcount(hostname)  
         hostname = node["hostname"].downcase
         datab = data_bag_item( $databag_name, hostname)
