@@ -2,11 +2,31 @@
 # Cookbook Name:: windows_network
 # Recipe:: default
 #
-# Copyright 2014, Proxmea BV
+# License: Apache license 2
+#
+# Authors
+# Christoffer Järnåker, Proxmea BV, 2014
+# Christoffer Järnåker, Schuberg Philis, 2014
 #
 
 if platform?("windows")
+ 
+  $showlog = true
+  node.override['windows_network']['databag_name'] = "udev" 
+  node.override['windows_network']['datatype'] = 2 
 
+  ####################################################################################################
+  ### Check that the prerequisite attributes are set okay                                          ###
+  ####################################################################################################
+  $databag_name = node['windows_network']['databag_name']
+  linfo($databag_name)
+  datatype = node['windows_network']['datatype'] 
+     
+  if !Chef::DataBag.list.key?($databag_name)
+    Chef::Log.error("Data bag #{databag_name} doesn't exist - exiting")
+    return 
+  end
+ 
   ####################################################################################################
   ### Check and update network interfacess ip configuration                                        ###
   ####################################################################################################
@@ -14,8 +34,8 @@ if platform?("windows")
   if_keyscount = if_keys.count
   hostname = node.hostname.downcase
   getnetcount = getnetcount(hostname)
-  Chef::Log.debug("Data bag interface count: #{getnetcount}") 
-  Chef::Log.debug("Actual interface count: #{if_keyscount}") 
+  linfo("Data bag interface count: #{getnetcount}") 
+  linfo("Actual interface count: #{if_keyscount}") 
   if if_keyscount == 1 and getnetcount == 1
     getfirstconfig = "true"
   end
@@ -36,17 +56,17 @@ if platform?("windows")
     ipaddress = node[:network][:interfaces][iface][:addresses].to_hash.select {|addr, debug| debug["family"] == "inet"}.flatten.first
     macaddress = node[:network][:interfaces][iface][:addresses].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
 
-    Chef::Log.debug("Node based values:")
-    Chef::Log.debug("  iface #{iface}")
-    Chef::Log.debug("  ifname #{ifname}")
-    Chef::Log.debug("  macaddress #{macaddress}")
-    Chef::Log.debug("  ipaddress #{ipaddress}")
+    linfo("Node based values:")
+    linfo("  iface #{iface}")
+    linfo("  ifname #{ifname}")
+    linfo("  macaddress #{macaddress}")
+    linfo("  ipaddress #{ipaddress}")
     $i = 0
     dns.each do |object|
-      Chef::Log.debug("  dns[#{$i}] #{dns[$i]}")
+      linfo("  dns[#{$i}] #{dns[$i]}")
       $i += 1
     end 
-    Chef::Log.debug("  dhcp #{dhcp}")
+    linfo("  dhcp #{dhcp}")
 
     # Now, let's get the environment wide DNS settings
     wd_DomainDNSName = node['win_domain']['DomainDNSName']
@@ -55,11 +75,11 @@ if platform?("windows")
     wd_dns[1] = node['win_domain']['DNS2']
     wd_dns[2] = node['win_domain']['DNS3'] 
 
-    Chef::Log.debug("Environment wide values:")
-    Chef::Log.debug("  wd_DomainDNSName #{wd_DomainDNSName}") 
+    linfo("Environment wide values:")
+    linfo("  wd_DomainDNSName #{wd_DomainDNSName}") 
     $i = 0
     wd_dns.each do |object|
-      Chef::Log.debug("  wd_dns[#{$i}] #{wd_dns[$i]}")
+      linfo("  wd_dns[#{$i}] #{wd_dns[$i]}")
       $i += 1
     end 
 
@@ -82,14 +102,14 @@ if platform?("windows")
       end
       newdnssearch = getval("dns-search",net,hostname) 
       
-      Chef::Log.debug("Node specific values:") 
-      Chef::Log.debug("  net #{net}")
-      Chef::Log.debug("  newip #{newip}")
-      Chef::Log.debug("  newsubnet #{newsubnet}")
-      Chef::Log.debug("  newdfgw #{newdfgw}")
+      linfo("Node specific values:") 
+      linfo("  net #{net}")
+      linfo("  newip #{newip}")
+      linfo("  newsubnet #{newsubnet}")
+      linfo("  newdfgw #{newdfgw}")
       $i = 0
       dns.each do |object|
-        Chef::Log.debug("  newdns[#{$i}] #{newdns[$i]}")
+        linfo("  newdns[#{$i}] #{newdns[$i]}")
         $i += 1
       end
 
@@ -129,10 +149,10 @@ if platform?("windows")
       $i +=1
     end
 
-    Chef::Log.debug("We consider these to be the best DNS's to use:")  
+    linfo("We consider these to be the best DNS's to use:")  
     $i = 0
     dns.each do |object|
-      Chef::Log.debug("  bestdns[#{$i}] #{bestdns[$i]}")
+      linfo("  bestdns[#{$i}] #{bestdns[$i]}")
       $i += 1
     end
 
@@ -147,14 +167,14 @@ if platform?("windows")
       actualdhcp = actualdhcpdata.downcase
     end
 
-    Chef::Log.debug("Values from actual system:") 
+    linfo("Values from actual system:") 
     $i = 0
     dns.each do |object|
-      Chef::Log.debug("  actualdns[#{$i}] #{actualdns[$i]}")
+      linfo("  actualdns[#{$i}] #{actualdns[$i]}")
       $i += 1
     end
-    Chef::Log.debug("  actualdnssuffix #{actualdnssuffix}")
-    Chef::Log.debug("  actualdhcp #{actualdhcp}")
+    linfo("  actualdnssuffix #{actualdnssuffix}")
+    linfo("  actualdhcp #{actualdhcp}")
 
     # Compare the best and actual values, and if different set dns. Maximum of three DNS's
     $i = 0
@@ -166,7 +186,7 @@ if platform?("windows")
     end
 
     # Okay, let's set the dns values
-    Chef::Log.debug("updatedns #{updatedns}")
+    linfo("updatedns #{updatedns}")
     if updatedns == "true"
       $i = 0
       bestdns.each do |object|
@@ -211,9 +231,9 @@ if platform?("windows")
     ifname = `powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapter | where{$_.MacAddress -eq '#{mac}'}).NetconnectionId"`.gsub(/\n/,"")
     newnet = getnet(macaddress,hostname,getfirstconfig) 
 
-    Chef::Log.debug("Network names:")
-    Chef::Log.debug("  ifname #{ifname}")
-    Chef::Log.debug("  newnet #{newnet}")
+    linfo("Network names:")
+    linfo("  ifname #{ifname}")
+    linfo("  newnet #{newnet}")
 
     if (ifname != newnet) && (newnet != nil) 
       Chef::Log.info("Renaming \"#{ifname}\" to \"#{newnet}\"")

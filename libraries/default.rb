@@ -6,7 +6,7 @@
 #
 def getnetcount(hostname)  
         hostname = node["hostname"].downcase
-        datab = data_bag_item( 'servers', hostname)
+        datab = data_bag_item( $databag_name, hostname)
         datai = datab['interfaces']
         if datai == nil  
                 return 0
@@ -18,7 +18,7 @@ def getnet(macaddress,hostname,getfirst="false")
         macaddress = macaddress.upcase
         macaddress = macaddress
         hostname = node["hostname"].downcase
-        datab = data_bag_item( 'servers', hostname)
+        datab = data_bag_item( $databag_name, hostname)
         datai = datab['interfaces']
         if datai == nil  
                 return nil
@@ -34,7 +34,7 @@ def getnet(macaddress,hostname,getfirst="false")
 end
 
 def getval(item,ifname,hostname) 
-        datab = data_bag_item( 'servers', hostname) 
+        datab = data_bag_item( $databag_name, hostname) 
         datai = datab['interfaces']
         if datai == nil  
                 return nil
@@ -47,3 +47,11 @@ def getval(item,ifname,hostname)
         end  
         return nil
 end 
+
+def linfo(data)
+        if $showlog != nil
+                Chef::Log.info(data)
+        else
+                Chef::Log.debug(data)
+        end
+end
