@@ -2,6 +2,11 @@
 
 This file is used to list changes made in each version of sbp_win_ip.
 
+0.1.1
+-----
+- jrnker - Implemented handling of IP storage in custom data bag name. 
+		   Implemented handling of NIC storage in different format
+
 ## 0.1.0:
 
 * Initial release of windows_network

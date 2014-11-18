@@ -55,8 +55,8 @@ end
 
 def linfo(data)
         if $showlog != nil
-                Chef::Log.info(data)
+                puts(data)
         else
-                Chef::Log.debug(data)
+                Chef::Log.info(data)
         end
 end

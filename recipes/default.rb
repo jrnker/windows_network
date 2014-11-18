@@ -89,6 +89,7 @@ if platform?("windows")
     # In this case the "mac" can be omitted from the databag
 
     net = getnet(macaddress,hostname,getfirstconfig)
+    newdns = Array.new
     if net == nil
       Chef::Log.warn("No configuration found for #{macaddress} in data bag servers #{hostname}. You might want to add it...")
     else 
@@ -96,7 +97,6 @@ if platform?("windows")
       newsubnet = getval("netmask",net,hostname)
       newdfgw = getval("gateway",net,hostname)  
       newdnsdata = getval("dns-nameservers",net,hostname)
-      newdns = Array.new
       if newdnsdata != nil
         newdns = newdnsdata.split(",")  
       end
