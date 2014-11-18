@@ -68,12 +68,15 @@ if platform?("windows")
     end 
     linfo("  dhcp #{dhcp}")
 
-    # Now, let's get the environment wide DNS settings
-    wd_DomainDNSName = node['win_domain']['DomainDNSName']
+    wd_DomainDNSName = nil
     wd_dns = Array.new
-    wd_dns[0] = node['win_domain']['DNS1']
-    wd_dns[1] = node['win_domain']['DNS2']
-    wd_dns[2] = node['win_domain']['DNS3'] 
+    if node.attribute?('win_domain')
+      # Now, let's get the environment wide DNS settings
+      wd_DomainDNSName = node['win_domain']['DomainDNSName']
+      wd_dns[0] = node['win_domain']['DNS1']
+      wd_dns[1] = node['win_domain']['DNS2']
+      wd_dns[2] = node['win_domain']['DNS3'] 
+    end
 
     linfo("Environment wide values:")
     linfo("  wd_DomainDNSName #{wd_DomainDNSName}") 

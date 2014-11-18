@@ -15,6 +15,3 @@ default['windows_network']['databag_name'] = "server"
 # 1  'Server' data bag, <hostname> item, 'interfaces' ...
 # 2  'udev' data bag, <hostname> item, <nic name>  ...
 default['windows_network']['datatype'] = 1 
-
-# Set some defaults to preven errors later on
-default['win_domain']['dummy'] = nil
