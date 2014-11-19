@@ -29,7 +29,7 @@ if platform?("windows")
   ####################################################################################################
   ### Check and update network interfacess ip configuration                                        ###
   ####################################################################################################
-  if_keys = node[:network][:interfaces].keys
+  if_keys = node['network']['interfaces'].keys
   if_keyscount = if_keys.count
   hostname = node.hostname.downcase
   getnetcount = getnetcount(hostname)
@@ -43,18 +43,18 @@ if platform?("windows")
   if_keys.each do |iface|
 
     # First off, let's collect some 'official' data that we can use later 
-    ifname = node[:network][:interfaces][iface][:instance][:net_connection_id]
-    dhcp = node[:network][:interfaces][iface][:configuration][:dhcp_enabled]
+    ifname = node['network']['interfaces'][iface]['instance']['net_connection_id']
+    dhcp = node['network']['interfaces'][iface]['configuration']['dhcp_enabled']
     
     dns = Array.new
     $i = 0
-    node[:network][:interfaces][iface][:configuration][:dns_server_search_order].each do |object|
+    node['network']['interfaces'][iface]['configuration']['dns_server_search_order'].each do |object|
       dns[$i] = object
       $i += 1
     end
 
-    ipaddress = node[:network][:interfaces][iface][:addresses].to_hash.select {|addr, debug| debug["family"] == "inet"}.flatten.first
-    macaddress = node[:network][:interfaces][iface][:addresses].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
+    ipaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "inet"}.flatten.first
+    macaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
 
     linfo("Node based values:")
     linfo("  iface #{iface}")
@@ -102,13 +102,13 @@ if platform?("windows")
       if newip != nil 
         if (newip.downcase == "dhcp") && (dhcp == false)
           Chef::Log.info("Changing ip from #{ipaddress} to DHCP on #{ifname}")
-          `netsh interface ip set address \"#{ifname}\" dhcp` 
+          r_d('netsh interface ip set address "' + ifname + '" dhcp')
           sleep(5)
         else
           if newsubnet != nil
             if not ipaddress == newip 
               Chef::Log.info("Changing ip from #{ipaddress} to #{newip} on #{ifname}")
-              `netsh interface ip set address \"#{ifname}\" static \"#{newip}\" \"#{newsubnet}\" \"#{newdfgw}\"`  
+              r_d('netsh interface ip set address "' + ifname + '" static "' + newip + '" "' + newsubnet + '" "' + newdfgw + '"')
             end 
           end
         end
@@ -195,10 +195,10 @@ if platform?("windows")
       bestdns.each do |object|
         if $i == 0 
           Chef::Log.info("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]}") 
-          `netsh interface ipv4 set dns name=\"#{ifname}\" source=static address=\"#{bestdns[$i]}\"`
+          r_d('netsh interface ipv4 set dns name="' + ifname + '" source=static address="' + bestdns[$i] + '"')
         else
           Chef::Log.info("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]} as index #{$i+1}") 
-          `netsh interface ipv4 add dns name=\"#{ifname}\" address=\"#{bestdns[$i]}\" index=#{$i+1}`
+          r_d('netsh interface ipv4 add dns name="' + ifname + '" address="' + bestdns[$i] +'" index=' + ($i+1).to_s)
         end
         $i += 1
       end 
@@ -225,10 +225,10 @@ if platform?("windows")
   ####################################################################################################
   ### Check and update network interfaces name                                                     ###
   ####################################################################################################
-  if_keys = node[:network][:interfaces].keys
+  if_keys = node['network']['interfaces'].keys
   if_keys.each do |iface|
     hostname = node.hostname.downcase
-    macaddress = node[:network][:interfaces][iface][:addresses].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
+    macaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
     mac = macaddress.upcase
 
     ifname = r_d('powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapter | where{$_.MacAddress -eq """' + mac + '"""}).NetconnectionId"')
@@ -240,7 +240,7 @@ if platform?("windows")
 
     if (ifname != newnet) && (newnet != nil) 
       Chef::Log.info("Renaming \"#{ifname}\" to \"#{newnet}\"")
-      `netsh interface set interface name=\"#{ifname}\" newname=\"#{newnet}\"`
+      r_d('netsh interface set interface name="' + ifname +'" newname="' + newnet + '"')
     end 
   end 
 end
