@@ -31,7 +31,7 @@ if platform?("windows")
   ####################################################################################################
   if_keys = node['network']['interfaces'].keys
   if_keyscount = if_keys.count
-  hostname = node.hostname.downcase
+  hostname = node['hostname'].downcase
   getnetcount = getnetcount(hostname)
   linfo("Data bag interface count: #{getnetcount}") 
   linfo("Actual interface count: #{if_keyscount}") 
@@ -227,7 +227,7 @@ if platform?("windows")
   ####################################################################################################
   if_keys = node['network']['interfaces'].keys
   if_keys.each do |iface|
-    hostname = node.hostname.downcase
+    hostname = node['hostname'].downcase
     macaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
     mac = macaddress.upcase
 
