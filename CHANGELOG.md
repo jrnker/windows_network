@@ -2,6 +2,12 @@
 
 This file is used to list changes made in each version of sbp_win_ip.
 
+0.2.0
+-----
+- jrnker - Handles multiple (2) datatype formats for the interfaces
+		 - Cleaned up code to satisfy foodcritic
+		 - Broke out code into several libraries
+
 0.1.1
 -----
 - jrnker - Implemented handling of IP storage in custom data bag name. 
