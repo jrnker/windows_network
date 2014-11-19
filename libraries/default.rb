@@ -10,48 +10,42 @@
 #
 
 def getnetcount(hostname)  
-        hostname = node["hostname"].downcase
-        datab = data_bag_item( $databag_name, hostname)
-        datai = datab['interfaces']
-        if datai == nil  
-                return 0
-        end 
-        return datai.count
+        case $datatype
+                when 1
+                        return getnetcount1(hostname)
+                when 2
+                        return getnetcount2(hostname)
+        end
 end
 
 def getnet(macaddress,hostname,getfirst="false") 
-        macaddress = macaddress.upcase
-        macaddress = macaddress
-        hostname = node["hostname"].downcase
-        datab = data_bag_item( $databag_name, hostname)
-        datai = datab['interfaces']
-        if datai == nil  
-                return nil
-        end 
-        datai.each do | object|
-                data = object['mac']
-                if data == macaddress || getfirst == "true"
-                        name = object['name']
-                        return name
-                end
-        end 
-        return nil
+        case $datatype
+                when 1
+                        return getnet1(macaddress,hostname,getfirst)
+                when 2
+                        return getnet2(macaddress,hostname,getfirst)
+        end
+end
+
+def getnetname(macaddress,hostname,getfirst="false") 
+        case $datatype
+                when 1
+                        return getnet1(macaddress,hostname,getfirst)
+                when 2
+                        return getnetname2(macaddress,hostname,getfirst)
+        end
 end
 
 def getval(item,ifname,hostname) 
-        datab = data_bag_item( $databag_name, hostname) 
-        datai = datab['interfaces']
-        if datai == nil  
-                return nil
-        end 
-        datai.each do | object|
-                if object['name'] == ifname
-                        data = object[item] 
-                        return data
-                end
-        end  
-        return nil
-end 
+        case $datatype
+                when 1
+                        return getval1(item,ifname,hostname) 
+                when 2
+                        return getval2(item,ifname,hostname) 
+        end
+end
+
+
 
 def linfo(data)
         if $showlog != nil

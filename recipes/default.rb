@@ -11,19 +11,18 @@
 
 if platform?("windows")
  
-  $showlog = true
-  node.override['windows_network']['databag_name'] = "udev" 
-  node.override['windows_network']['datatype'] = 2 
-
   ####################################################################################################
-  ### Check that the prerequisite attributes are set okay                                          ###
+  ### Check and load prerequisite attributes                                                       ###
   ####################################################################################################
   $databag_name = node['windows_network']['databag_name']
-  linfo($databag_name)
-  datatype = node['windows_network']['datatype'] 
+  $env_att_name = node['windows_network']['env_att_name']
+  linfo("databag_name #{$databag_name}")
+  linfo("env_att_name #{$env_att_name}")
+  $datatype = node['windows_network']['datatype'] 
+  linfo("datatype #{$datatype}")
      
   if !Chef::DataBag.list.key?($databag_name)
-    Chef::Log.error("Data bag #{databag_name} doesn't exist - exiting")
+    Chef::Log.error("Data bag #{$databag_name} doesn't exist - exiting")
     return 
   end
  
@@ -40,6 +39,7 @@ if platform?("windows")
     getfirstconfig = "true"
   end
 
+  # Iterate through all network interfaces
   if_keys.each do |iface|
 
     # First off, let's collect some 'official' data that we can use later 
@@ -68,24 +68,6 @@ if platform?("windows")
     end 
     linfo("  dhcp #{dhcp}")
 
-    wd_DomainDNSName = nil
-    wd_dns = Array.new
-    if node.attribute?('win_domain')
-      # Now, let's get the environment wide DNS settings
-      wd_DomainDNSName = node['win_domain']['DomainDNSName']
-      wd_dns[0] = node['win_domain']['DNS1']
-      wd_dns[1] = node['win_domain']['DNS2']
-      wd_dns[2] = node['win_domain']['DNS3'] 
-    end
-
-    linfo("Environment wide values:")
-    linfo("  wd_DomainDNSName #{wd_DomainDNSName}") 
-    $i = 0
-    wd_dns.each do |object|
-      linfo("  wd_dns[#{$i}] #{wd_dns[$i]}")
-      $i += 1
-    end 
-
     # We first get the network name and put it in 'net', and then use this to retrieve the settings
     #
     # If we only have one NIC and there os only one NIC specified in the data bag, then this will be used.
@@ -110,6 +92,7 @@ if platform?("windows")
       linfo("  newip #{newip}")
       linfo("  newsubnet #{newsubnet}")
       linfo("  newdfgw #{newdfgw}")
+      linfo("  newdnssearch #{newdnssearch}")
       $i = 0
       dns.each do |object|
         linfo("  newdns[#{$i}] #{newdns[$i]}")
@@ -139,6 +122,24 @@ if platform?("windows")
     # We prefer, in order: node specific, environment specific, previous
     # Previous can thus be what DHCP has set it to be
 
+    wd_DomainDNSName = nil
+    wd_dns = Array.new
+    if node.attribute?($env_att_name)
+      # Now, let's get the environment wide DNS settings
+      wd_DomainDNSName = node[$env_att_name]['DomainDNSName']
+      wd_dns[0] = node[$env_att_name]['DNS1']
+      wd_dns[1] = node[$env_att_name]['DNS2']
+      wd_dns[2] = node[$env_att_name]['DNS3'] 
+    end
+
+    linfo("Environment wide values:")
+    linfo("  wd_DomainDNSName #{wd_DomainDNSName}") 
+    $i = 0
+    wd_dns.each do |object|
+      linfo("  wd_dns[#{$i}] #{wd_dns[$i]}")
+      $i += 1
+    end 
+
     bestdns = Array.new
     $i = 0 
     while $i < 2  do 
@@ -159,13 +160,12 @@ if platform?("windows")
       $i += 1
     end
 
+    # Get some local info
     mac = macaddress.upcase
-    actualdnsdata = `powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapterConfiguration | where{$_.MacAddress -eq '#{mac}'}).DnsServerSearchOrder"` 
+    actualdns = r_a('powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapterConfiguration | where{$_.MacAddress -eq """' + mac + '"""}).DnsServerSearchOrder"')
     actualdnssuffix = registry_get_values("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters").find_all{|item| item[:name] == "SearchList"}[0][:data]
-    actualdhcpdata =      `powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapterConfiguration | where{$_.MacAddress -eq '#{mac}'}).DHCPEnabled"`.gsub(/\n/,"")  
-    if actualdnsdata != nil
-      actualdns = actualdnsdata.split(/\n/)
-    end
+    actualdhcpdata =  r_d('powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapterConfiguration | where{$_.MacAddress -eq """' + mac + '"""}).DHCPEnabled"')
+
     if actualdhcpdata != nil
       actualdhcp = actualdhcpdata.downcase
     end
@@ -231,8 +231,8 @@ if platform?("windows")
     macaddress = node[:network][:interfaces][iface][:addresses].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
     mac = macaddress.upcase
 
-    ifname = `powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapter | where{$_.MacAddress -eq '#{mac}'}).NetconnectionId"`.gsub(/\n/,"")
-    newnet = getnet(macaddress,hostname,getfirstconfig) 
+    ifname = r_d('powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapter | where{$_.MacAddress -eq """' + mac + '"""}).NetconnectionId"')
+    newnet = getnetname(macaddress,hostname,getfirstconfig) 
 
     linfo("Network names:")
     linfo("  ifname #{ifname}")
