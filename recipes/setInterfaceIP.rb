@@ -62,7 +62,7 @@ if_keys.each do |iface|
     Chef::Log.warn("No configuration found for #{macaddress} in data bag #{$databag_name} #{hostname}. You might want to add it...")
   else 
     newip = getval("address",net,hostname)
-    newip = nil if !newip.IPAddr? if newip != "dhcp" if newip != nil
+    newip = nil if !newip.IPAddr? if newip.downcase != "dhcp" if newip != nil
     newsubnet = getval("netmask",net,hostname)
     newsubnet = "255.255.25.255" if !newsubnet.IPAddr? if newsubnet != nil 
     newdfgw = getval("gateway",net,hostname)  
@@ -87,14 +87,14 @@ if_keys.each do |iface|
     end
 
     if newip != nil 
-      if (newip.downcase == "dhcp") && (dhcp == false)
-        Chef::Log.info("Changing ip from #{ipaddress} to DHCP on #{ifname}")
+      if (newip.downcase == "dhcp") && (dhcp == false) 
+        Chef::Log.info("Changing ip from DHCP=#{dhcp} #{ipaddress} to DHCP on #{ifname}")
         r_d('netsh interface ip set address "' + ifname + '" dhcp')
         sleep(5)
       else
         if newsubnet != nil
-          if not ipaddress == newip 
-            Chef::Log.info("Changing ip from #{ipaddress} to #{newip} on #{ifname}")
+          if ((not ipaddress == newip) && (newip.downcase != "dhcp")) || ((newip.downcase != "dhcp") && (dhcp == true))
+            Chef::Log.info("Changing ip from DHCP=#{dhcp} #{ipaddress} to #{newip} on #{ifname}")
             r_d('netsh interface ip set address "' + ifname + '" static "' + newip + '" "' + newsubnet + '" "' + newdfgw + '"')
           end 
         end
