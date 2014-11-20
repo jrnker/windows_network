@@ -127,6 +127,7 @@ metadata.rb
 depends 'windows_network', '>= 0.1.0'
 ``` 
 3 Add data bag servers <hostname> as described above section
+
 4 (optional) Add Environment variables under win_domain
 
 Notes
