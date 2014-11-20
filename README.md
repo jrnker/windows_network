@@ -2,6 +2,8 @@ windows_network Cookbook
 =======================
 This cookbook will configure the network interfaces on Windows 
 
+It looks into a databag for IP information and sets it if it's not set as specified.
+It supports two different formats to store the IP configuration, to support logical and the 'udev' (a proprietary) format.
 
 Requirements
 ------------
@@ -10,8 +12,9 @@ Requirements
 This cookbook needs a data bag called 'servers' with an item called <hostname>.
 It also uses win_domain for fallback information. 
 
+####Datatype 1 (default)
 
-data bag servers <hostname>
+#####data bag [servers][hostname]
 ```
 {
   "id": "mycomputername",
@@ -40,8 +43,58 @@ or
   ]
 }
 ```
+####Datatype 2 (aka udev)
 
-Environment 
+#####data bag [servers][hostname]
+Note that MAC addresses need to be in lowercase
+```
+{
+  "id": "mycomputername",
+  "def_gw": "192.168.1.195",
+  "net": {
+    "eth4": "00:20:56:9a:63:a1",
+    "eth0": "00:20:56:9a:13:ee",
+    "eth2": "00:20:56:9a:3b:b9",
+    "eth1": "00:20:56:9a:40:08"
+  },
+  "ip": {
+    "eth4": "192.168.4.127",
+    "eth0": "192.168.3.228",
+    "eth2": "192.168.2.228",
+    "eth1": "192.168.1.199"
+  },
+  "netmasks": {
+    "eth4": "nil",
+    "eth0": "255.255.255.192",
+    "eth2": "255.255.255.192",
+    "eth1": "255.255.255.192"
+  },
+  "broadcasts": {
+    "eth4": "nil",
+    "eth0": "192.168.3.255",
+    "eth2": "192.168.2.255",
+    "eth1": "192.168.1.255"
+  },
+  "networks": {
+    "eth4": "nil",
+    "eth0": "192.168.3.192",
+    "eth2": "192.168.2.192",
+    "eth1": "192.168.1.192"
+  },
+  "naming": {
+    "build": "00:20:56:9a:63:a1",
+    "admin": "00:20:56:9a:13:ee",
+    "back": "00:20:56:9a:3b:b9",
+    "front": "00:20:56:9a:40:08"
+  },
+  "dns": {
+    "dns1": "192.168.99.121",
+    "dns2": "192.168.98.97"
+  }
+}
+```
+
+####Environment (optional)
 ```
 {
   "name": "office",
@@ -58,18 +111,23 @@ Environment
 Usage
 ----------
 
-1. Include cookbook in recipe: 
+1 Include cookbook in recipe: 
 recipe/default.rb
 ```
 include_recipe "windows_network"
 ```
-2. Include version in metadata: 
+Optionally override attributes
+```
+node.override['windows_network']['databag_name'] = "udev" 
+node.override['windows_network']['datatype'] = 2 
+```
+2 Include version in metadata: 
 metadata.rb
 ```
 depends 'windows_network', '>= 0.1.0'
-```
-3. Add data bag servers <hostname> as under the requirements section
-4. (optional) Add Environment variables under win_domain
+``` 
+3 Add data bag servers <hostname> as described above section
+4 (optional) Add Environment variables under win_domain
 
 Notes
 ----------
@@ -94,7 +152,9 @@ Contributing
 
 License and Authors
 -------------------
-Authors: Christoffer Järnåker, Proxmea BV
+Authors: 
+Christoffer Järnåker, Proxmea BV
+Christoffer Järnåker, Schuberg Philis, 2014
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
