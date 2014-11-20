@@ -27,7 +27,7 @@ if platform?("windows")
     return 
   end
  
-  include_recipe 'windows_network::setInterfaceIP'
-  include_recipe 'windows_network::setInterfaceName'
+  include_recipe 'windows_network::setInterfaceIP' if node['windows_network']['setInterfaceIP'] == true 
+  include_recipe 'windows_network::setInterfaceName' if node['windows_network']['setInterfaceName'] == true 
   
  end

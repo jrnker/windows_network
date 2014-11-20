@@ -7,6 +7,7 @@ This file is used to list changes made in each version of sbp_win_ip.
 - jrnker - Handles multiple (2) datatype formats for the interfaces
 		 - Cleaned up code to satisfy foodcritic
 		 - Broke out code into several libraries
+		 - Fixed spelling error of the 'databag_name' attribute
 
 0.1.1
 -----
