@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: windows_network
-# Recipe:: default
+# Recipe:: retrievedata.rb
 #
 # License: Apache license 2
 #

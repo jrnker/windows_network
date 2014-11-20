@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: windows_network
-# Recipe:: default
+# Recipe:: setInterfaceName.rb
 #
 # License: Apache license 2
 #
