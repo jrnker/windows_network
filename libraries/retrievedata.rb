@@ -17,7 +17,7 @@ def r_d(data_cmd, removeCR = true)
     data = cmd.stdout
     if removeCR == true
       data = data.gsub(/\n/,"").gsub(/\r/,"") 
-    end
+    end 
     return data 
 end
 
@@ -26,7 +26,7 @@ def r_a(data_cmd)
     data = r_d(data_cmd,false) 
     if data != nil
       if data.include? "\n"  
-        data = data.split(/\n/)
+        data = data.gsub(/\r/,"").split(/\n/)
       else    
         data2 = Array.new
         data2[0] = data

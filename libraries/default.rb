@@ -54,3 +54,9 @@ def linfo(data)
                 Chef::Log.info(data)
         end
 end
+
+class String
+  def IPAddr?
+    IPAddr.new(self) != nil rescue false
+  end
+end

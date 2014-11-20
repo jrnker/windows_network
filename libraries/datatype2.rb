@@ -70,8 +70,9 @@ def getval2(group,item,hostname)
                 when "gateway"
                         #This will only work if ip/mask has been asked for this nic prior to this statement 
                         if !defined?($dt2ip).nil? && !defined?($dt2netmask).nil? 
+                                return nil if !$dt2ip.IPAddr? || !$dt2netmask.IPAddr?
                                 datab = data_bag_item( $databag_name, hostname) 
-                                dfgw = datab['def_gw'] 
+                                dfgw = datab['def_gw']  
                                 net = IPAddr.new("#{$dt2ip}/#{$dt2netmask}") 
                                 if net===dfgw 
                                         return dfgw
