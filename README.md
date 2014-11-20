@@ -1,4 +1,4 @@
-windows_network Cookbook
+windows_network chef Cookbook
 =======================
 This cookbook will configure the network interfaces on Windows 
 
@@ -9,7 +9,7 @@ Requirements
 ------------
 
 
-This cookbook needs a data bag called 'servers' with an item called <hostname>.
+This cookbook needs a data bag called 'servers' with an item named as your hostname.
 It also uses win_domain for fallback information. 
 
 ####Datatype 1 (default)
