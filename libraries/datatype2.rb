@@ -11,6 +11,7 @@
 
 def getnetcount2(hostname)  
         hostname = node["hostname"].downcase
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname)
         datai = datab['net']
         if datai == nil  
@@ -22,6 +23,7 @@ end
 def getnet2(macaddress,hostname,getfirst="false") 
         macaddress = macaddress.downcase 
         hostname = node["hostname"].downcase
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname)
         datai = datab['net'] 
         if datai == nil  
@@ -40,7 +42,8 @@ end
 
 def getnetname2(macaddress,hostname,getfirst="false") 
         macaddress = macaddress.downcase 
-        hostname = node["hostname"].downcase
+        hostname = node["hostname"].downcase 
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname)
         datai = datab['naming'] 
         if datai == nil  
@@ -82,6 +85,7 @@ def getval2(group,item,hostname)
                         end
         end
 
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname) 
         datai = datab[group]
         if datai == nil  

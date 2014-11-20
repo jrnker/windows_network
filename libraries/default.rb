@@ -51,8 +51,17 @@ def linfo(data)
         if $showlog != nil
                 puts(data)
         else
-                Chef::Log.info(data)
+                #Chef::Log.info(data)
         end
+end
+
+def validate_databagitem(bag,item)
+    begin 
+      rbagitem = data_bag_item(bag,item) 
+    rescue Exception => e  
+        return false
+    end  
+    return true
 end
 
 class String

@@ -59,12 +59,12 @@ if_keys.each do |iface|
   net = getnet(macaddress,hostname,$getfirstconfig)
   newdns = Array.new
   if net == nil
-    Chef::Log.warn("No configuration found for #{macaddress} in data bag servers #{hostname}. You might want to add it...")
+    Chef::Log.warn("No configuration found for #{macaddress} in data bag #{$databag_name} #{hostname}. You might want to add it...")
   else 
     newip = getval("address",net,hostname)
-    newip = nil if !newip.IPAddr? if newip != nil 
+    newip = nil if !newip.IPAddr? if newip != "dhcp" if newip != nil
     newsubnet = getval("netmask",net,hostname)
-    newsubnet = nil if !newsubnet.IPAddr? if newsubnet != nil 
+    newsubnet = "255.255.25.255" if !newsubnet.IPAddr? if newsubnet != nil 
     newdfgw = getval("gateway",net,hostname)  
     newdfgw = "" if newdfgw == nil
     newdnsdata = getval("dns-nameservers",net,hostname)

@@ -11,6 +11,7 @@
 
 def getnetcount1(hostname)  
         hostname = node["hostname"].downcase
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname)
         datai = datab['interfaces']
         if datai == nil  
@@ -22,6 +23,7 @@ end
 def getnet1(macaddress,hostname,getfirst="false") 
         macaddress = macaddress.upcase 
         hostname = node["hostname"].downcase
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname)
         datai = datab['interfaces']
         if datai == nil  
@@ -38,6 +40,7 @@ def getnet1(macaddress,hostname,getfirst="false")
 end
 
 def getval1(item,ifname,hostname) 
+        return nil if !validate_databagitem($databag_name, hostname)
         datab = data_bag_item( $databag_name, hostname) 
         datai = datab['interfaces']
         if datai == nil  
