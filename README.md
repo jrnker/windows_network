@@ -37,7 +37,8 @@ or for more than one interface:
   "id": "mycomputername",
   "interfaces": [
     {
-      "name":     "Local network", 
+      "name":     "Local network",
+      "mac":      "00:AC:21:BC:F0:E1",  
       "address":  "dhcp"
     },
     {
