@@ -69,3 +69,14 @@ class String
     IPAddr.new(self) != nil rescue false
   end
 end
+
+def doaction(infotext,data_cmd)  
+    begin
+      execute "#{infotext}" do
+        command "#{data_cmd}"
+        action :nothing  
+      end.run_action(:run)
+    rescue Exception => e 
+      Chef::Log.error "Failed in executing command. The error was: #{e}"
+    end
+end

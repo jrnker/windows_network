@@ -2,6 +2,11 @@
 
 This file is used to list changes made in each version of sbp_win_ip.
 
+0.2.1
+-----
+- jrnker - Wrapping come code into execute statements
+		 - Reformatting readme.md 
+
 0.2.0
 -----
 - jrnker - Handles multiple (2) datatype formats for the interfaces
