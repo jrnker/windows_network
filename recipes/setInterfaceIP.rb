@@ -64,14 +64,11 @@ if_keys.each do |iface|
     newip = getval("address",net,hostname)
     newip = nil if !newip.IPAddr? if newip.downcase != "dhcp" if newip != nil
     newsubnet = getval("netmask",net,hostname)
-    newsubnet = "255.255.25.255" if !newsubnet.IPAddr? if newsubnet != nil 
+    newsubnet = "255.255.255.255" if !newsubnet.IPAddr? if newsubnet != nil 
     newdfgw = getval("gateway",net,hostname)  
     newdfgw = "" if newdfgw == nil
     newdnsdata = getval("dns-nameservers",net,hostname)
     newdns = newdnsdata.split(",") if newdnsdata != nil
-    #if newdnsdata != nil
-    #  newdns = newdnsdata.split(",")  
-    #end
     newdnssearch = getval("dns-search",net,hostname) 
     
     linfo("Node specific values:") 
@@ -86,17 +83,16 @@ if_keys.each do |iface|
       $i += 1
     end
 
-    if newip != nil 
+    if newip != nil  
       if (newip.downcase == "dhcp") && (dhcp == false) 
-        Chef::Log.info("Changing ip from DHCP=#{dhcp} #{ipaddress} to DHCP on #{ifname}")
-        r_d('netsh interface ip set address "' + ifname + '" dhcp')
+        doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to DHCP on #{ifname}",\
+                 'netsh interface ip set address "' + ifname + '" dhcp')
         sleep(5)
       else
         if newsubnet != nil
-          if ((not ipaddress == newip) && (newip.downcase != "dhcp")) || ((newip.downcase != "dhcp") && (dhcp == true))
-            Chef::Log.info("Changing ip from DHCP=#{dhcp} #{ipaddress} to #{newip} on #{ifname}")
-            r_d('netsh interface ip set address "' + ifname + '" static "' + newip + '" "' + newsubnet + '" "' + newdfgw + '"')
-          end 
+          doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to #{newip} on #{ifname}",\
+                   'netsh interface ip set address "' + ifname + '" static "' + newip + '" "' + newsubnet + '" "' + newdfgw + '"',\
+                   ((not ipaddress == newip) && (newip.downcase != "dhcp")) || ((newip.downcase != "dhcp") && (dhcp == true)) )
         end
       end
     end 
@@ -181,27 +177,24 @@ if_keys.each do |iface|
     $i = 0
     bestdns.each do |object|
       if $i == 0 
-        Chef::Log.info("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]}") 
-        r_d('netsh interface ipv4 set dns name="' + ifname + '" source=static address="' + bestdns[$i] + '"')
+        doaction("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]}",\
+                 'netsh interface ipv4 set dns name="' + ifname + '" source=static address="' + bestdns[$i] + '"')
       else
-        Chef::Log.info("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]} as index #{$i+1}") 
-        r_d('netsh interface ipv4 add dns name="' + ifname + '" address="' + bestdns[$i] +'" index=' + ($i+1).to_s)
+        doaction("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]} as index #{$i+1}",\
+                 'netsh interface ipv4 add dns name="' + ifname + '" address="' + bestdns[$i] +'" index=' + ($i+1).to_s)
       end
       $i += 1
     end 
   end
 
   # The dns search is system wide, though it will be applied per interface. Last one wins ;)
-  if newdnssearch != nil && actualdnssuffix != newdnssearch
-  Chef::Log.info("Setting DNS search suffix list to  #{newdnssearch}")
-    registry_key "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters" do
-      values [{
-        :name => "SearchList",
-        :type => :string ,
-        :data => newdnssearch
-        }]
-        action :create 
-    end
+  registry_key "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters" do
+    values [{
+      :name => "SearchList",
+      :type => :string ,
+      :data => newdnssearch
+      }]
+      only_if {newdnssearch != nil && actualdnssuffix != newdnssearch}
+      action :create 
   end
-
 end

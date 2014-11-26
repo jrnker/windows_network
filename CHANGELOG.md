@@ -6,6 +6,7 @@ This file is used to list changes made in each version of sbp_win_ip.
 -----
 - jrnker - Wrapping come code into execute statements
 		 - Reformatting readme.md 
+		 - Fixed default netmask if not specified
 
 0.2.0
 -----

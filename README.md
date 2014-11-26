@@ -32,6 +32,7 @@ It also uses win_domain for fallback information.
 }
 ``` 
 or for more than one interface:
+
 ```
 {
   "id": "mycomputername",
@@ -57,6 +58,7 @@ or for more than one interface:
 
 #####data bag [servers][hostname]
 Note that MAC addresses need to be in lowercase
+
 ```
 {
   "id": "mycomputername",
@@ -123,19 +125,24 @@ Usage
 
 1 Include cookbook in recipe: 
 recipe/default.rb
+
 ```
 include_recipe "windows_network"
 ```
+
 Optionally override attributes
+
 ```
 node.override['windows_network']['databag_name'] = "udev" 
 node.override['windows_network']['datatype'] = 2 
 ```
 2 Include version in metadata: 
 metadata.rb
+
 ```
 depends 'windows_network', '>= 0.1.0'
 ``` 
+
 3 Add data bag servers <hostname> as described above section
 
 4 (optional) Add Environment variables under win_domain

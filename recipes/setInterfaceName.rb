@@ -25,8 +25,7 @@ if_keys.each do |iface|
   linfo("  ifname #{ifname}")
   linfo("  newnet #{newnet}")
 
-  if (ifname != newnet) && (newnet != nil) 
-    Chef::Log.info("Renaming \"#{ifname}\" to \"#{newnet}\"") 
-    r_d('netsh interface set interface name="' + ifname +'" newname="' + newnet + '"')
-  end 
+  doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\
+           'netsh interface set interface name="' + ifname +'" newname="' + newnet + '"',\
+           (ifname != newnet) && (newnet != nil) )
 end 
