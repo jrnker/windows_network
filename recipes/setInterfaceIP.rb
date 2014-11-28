@@ -40,10 +40,14 @@ if_keys.each do |iface|
 
   ipaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "inet"}.flatten.first
   macaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
+  dfgw = node['network']['interfaces'][iface]['configuration']['default_ip_gateway']
+  dfgw = dfgw.flatten.first if dfgw != nil
+  dfgw = "" if dfgw == nil
 
   linfo("Node based values:")
   linfo("  iface #{iface}")
   linfo("  ifname #{ifname}")
+  linfo("  dfgw #{dfgw}")
   linfo("  macaddress #{macaddress}")
   linfo("  ipaddress #{ipaddress}")
   $i = 0
@@ -94,7 +98,9 @@ if_keys.each do |iface|
         if newsubnet != nil
           doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to #{newip} on #{ifname}",\
                    'netsh interface ip set address "' + ifname + '" static "' + newip + '" "' + newsubnet + '" "' + newdfgw + '"',\
-                   ((not ipaddress == newip) && (newip.downcase != "dhcp")) || ((newip.downcase != "dhcp") && (dhcp == true)) )
+                   ((dfgw != newdfgw) && (newip.downcase != "dhcp") || \
+                    (not ipaddress == newip) && (newip.downcase != "dhcp")) || \
+                   (newip.downcase != "dhcp") && (dhcp == true) )
         end
       end
     end 

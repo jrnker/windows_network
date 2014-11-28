@@ -10,6 +10,7 @@ This file is used to list changes made in each version of sbp_win_ip.
 		 - Fixed that datatype 2 could return an empty dns array if the dns entry didn't exist in the data bag. Now it returns nil.
 		 - Added Berksfile
 		 - If a subnet mask isn't valid then the IP address is also considered invalid.
+		 - Also checking default gateway so that it's set right
 
 
 0.2.1
