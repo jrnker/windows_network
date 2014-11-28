@@ -70,7 +70,7 @@ def getval2(group,item,hostname)
                         group = "netmasks" 
                 when "dns-nameservers" 
                         datai = datab['dns']
-                        return nil if datai = nil
+                        return nil if datai == nil
 
                         dns = Array.new
                         dns[0] = getval2("dns","dns1",hostname) 
