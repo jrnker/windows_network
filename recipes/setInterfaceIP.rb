@@ -66,7 +66,7 @@ if_keys.each do |iface|
     newip = getval("address",net,hostname)
     newip = nil if !newip.IPAddr? if newip.downcase != "dhcp" if newip != nil
     newsubnet = getval("netmask",net,hostname)
-    newsubnet = "255.255.255.255" if !newsubnet.IPAddr? if newsubnet != nil 
+    newsubnet = nil if !newsubnet.IPAddr? if newsubnet != nil 
     newdfgw = getval("gateway",net,hostname)  
     newdfgw = "" if newdfgw == nil
     newdnsdata = getval("dns-nameservers",net,hostname)
