@@ -2,6 +2,15 @@
 
 This file is used to list changes made in each version of sbp_win_ip.
 
+0.2.2
+-----
+- jrnker - Listened to foodcritic.
+		 - Changed the way bestdns is evaluated. Previously it evaluated each DNS server from each source (databag/environment/local setting), but now it uses the best source.
+		 - Explored some more if-then scenarios where certain values can be nil and made sure that was handled without exception.
+		 - Fixed that datatype 2 could return an empty dns array if the dns entry didn't exist in the data bag. Now it returns nil.
+		 - Added Berksfile
+
+
 0.2.1
 -----
 - jrnker - Wrapping come code into execute statements

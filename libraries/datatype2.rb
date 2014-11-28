@@ -59,13 +59,19 @@ end
 
 def getval2(group,item,hostname) 
 
+        return nil if !validate_databagitem($databag_name, hostname)
+        datab = data_bag_item( $databag_name, hostname) 
+
         # We'll implement some pickup locgic, as this datatype is quiet different from #2.
         case group
                 when "address"
                         group = "ip" 
                 when "netmask"
                         group = "netmasks" 
-                when "dns-nameservers"
+                when "dns-nameservers" 
+                        datai = datab['dns']
+                        return nil if datai = nil
+
                         dns = Array.new
                         dns[0] = getval2("dns","dns1",hostname) 
                         dns[1] = getval2("dns","dns2",hostname)
@@ -74,7 +80,6 @@ def getval2(group,item,hostname)
                         #This will only work if ip/mask has been asked for this nic prior to this statement 
                         if !defined?($dt2ip).nil? && !defined?($dt2netmask).nil? 
                                 return nil if !$dt2ip.IPAddr? || !$dt2netmask.IPAddr?
-                                datab = data_bag_item( $databag_name, hostname) 
                                 dfgw = datab['def_gw']  
                                 net = IPAddr.new("#{$dt2ip}/#{$dt2netmask}") 
                                 if net===dfgw 
@@ -85,8 +90,6 @@ def getval2(group,item,hostname)
                         end
         end
 
-        return nil if !validate_databagitem($databag_name, hostname)
-        datab = data_bag_item( $databag_name, hostname) 
         datai = datab[group]
         if datai == nil  
                 return nil

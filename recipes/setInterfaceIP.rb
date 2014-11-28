@@ -31,9 +31,11 @@ if_keys.each do |iface|
   
   dns = Array.new
   $i = 0
-  node['network']['interfaces'][iface]['configuration']['dns_server_search_order'].each do |object|
-    dns[$i] = object
-    $i += 1
+  if node['network']['interfaces'][iface]['configuration']['dns_server_search_order'] != nil
+    node['network']['interfaces'][iface]['configuration']['dns_server_search_order'].each do |object|
+      dns[$i] = object
+      $i += 1
+    end
   end
 
   ipaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "inet"}.flatten.first
@@ -124,21 +126,25 @@ if_keys.each do |iface|
   end 
 
   bestdns = Array.new
-  $i = 0 
-  while $i < 2  do 
-    bestdns[$i] = newdns[$i]
-    if bestdns[$i] == nil 
-      bestdns[$i] = wd_dns[$i]
-      if bestdns[$i] == nil
-        bestdns[$i] = dns[$i]
+
+  if newdns.count != 0
+    linfo("Using DNS values from data bag")
+    bestdns = newdns
+  else 
+    if wd_dns.count != 0
+      linfo("Using DNS values from environment")
+      bestdns = wd_dns
+    else
+      if dns.count != 0
+        linfo("Using DNS values from machine")
+        bestdns = dns
       end
-    end 
-    $i +=1
-  end
+    end
+  end    
 
   linfo("We consider these to be the best DNS's to use:")  
   $i = 0
-  dns.each do |object|
+  bestdns.each do |object|
     linfo("  bestdns[#{$i}] #{bestdns[$i]}")
     $i += 1
   end
@@ -176,14 +182,16 @@ if_keys.each do |iface|
   if updatedns == "true"
     $i = 0
     bestdns.each do |object|
-      if $i == 0 
-        doaction("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]}",\
-                 'netsh interface ipv4 set dns name="' + ifname + '" source=static address="' + bestdns[$i] + '"')
-      else
-        doaction("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]} as index #{$i+1}",\
-                 'netsh interface ipv4 add dns name="' + ifname + '" address="' + bestdns[$i] +'" index=' + ($i+1).to_s)
+      if bestdns[$i] != nil
+        if $i == 0 
+          doaction("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]}",\
+                   'netsh interface ipv4 set dns name="' + ifname + '" source=static address="' + bestdns[$i] + '"')
+        else
+          doaction("Setting DNS#{$i} on #{ifname} to #{bestdns[$i]} as index #{$i+1}",\
+                   'netsh interface ipv4 add dns name="' + ifname + '" address="' + bestdns[$i] + '" index=' + ($i+1).to_s)
+        end
+        $i += 1
       end
-      $i += 1
     end 
   end
 

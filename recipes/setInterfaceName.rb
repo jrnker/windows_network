@@ -25,7 +25,9 @@ if_keys.each do |iface|
   linfo("  ifname #{ifname}")
   linfo("  newnet #{newnet}")
 
-  doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\
-           'netsh interface set interface name="' + ifname +'" newname="' + newnet + '"',\
-           (ifname != newnet) && (newnet != nil) )
-end 
+  if (newnet != nil) 
+    doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\
+             'netsh interface set interface name="' + ifname +'" newname="' + newnet + '"',\
+             (ifname != newnet))
+    end 
+  end

@@ -72,8 +72,8 @@ end
 
 def doaction(infotext,data_cmd,onlyif=true)  
     begin
-      execute "#{infotext}" do
-        command "#{data_cmd}"
+      execute infotext do
+        command data_cmd
         action :nothing
         only_if {onlyif}  
       end.run_action(:run)
