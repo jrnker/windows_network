@@ -29,5 +29,6 @@ if_keys.each do |iface|
     doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\
              'netsh interface set interface name="' + ifname +'" newname="' + newnet + '"',\
              (ifname != newnet))
-    end 
-  end
+    $nodeUpdated = true if ifname != newnet 
+  end 
+end

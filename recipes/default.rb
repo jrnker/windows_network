@@ -26,8 +26,15 @@ if platform?("windows")
     Chef::Log.error("Data bag #{$databag_name} doesn't exist - exiting")
     return 
   end
- 
+  
+  $nodeUpdated = false
+
   include_recipe 'windows_network::setInterfaceIP' if node['windows_network']['setInterfaceIP'] == true 
   include_recipe 'windows_network::setInterfaceName' if node['windows_network']['setInterfaceName'] == true 
   
+  ohai 'chef' do
+    action :reload
+    not_if $nodeUpdated == false
+  end
+
  end
