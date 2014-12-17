@@ -94,7 +94,6 @@ if_keys.each do |iface|
         doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to DHCP on #{ifname}",\
                  'netsh interface ip set address "' + ifname + '" dhcp')
         sleep(5)
-        $nodeUpdated = true
       else
         if newsubnet != nil
           doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to #{newip} on #{ifname}",\
@@ -102,7 +101,6 @@ if_keys.each do |iface|
                    ((dfgw != newdfgw) && (newip.downcase != "dhcp") || \
                     (not ipaddress == newip) && (newip.downcase != "dhcp")) || \
                    (newip.downcase != "dhcp") && (dhcp == true) )
-          $nodeUpdated = true
         end
       end
     end 
@@ -188,7 +186,6 @@ if_keys.each do |iface|
   # Okay, let's set the dns values
   linfo("updatedns #{updatedns}")
   if updatedns == "true"
-    $nodeUpdated = true
     $i = 0
     bestdns.each do |object|
       if bestdns[$i] != nil

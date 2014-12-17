@@ -27,14 +27,32 @@ if platform?("windows")
     return 
   end
   
-  $nodeUpdated = false
-
   include_recipe 'windows_network::setInterfaceIP' if node['windows_network']['setInterfaceIP'] == true 
   include_recipe 'windows_network::setInterfaceName' if node['windows_network']['setInterfaceName'] == true 
   
-  ohai 'chef' do
-    action :reload
-    not_if $nodeUpdated == false
+  # ohai 'chef' do
+  #   action :reload
+  #   not_if $nodeUpdated == false
+  # end
+
+  ohai "net_reload" do
+    action :nothing
+    plugin "network"
   end
+
+  ruby_block "bla" do
+    block do 
+      #if (newnet != nil) 
+      # doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\
+      #        'netsh interface set interface name="' + ifname +'" newname="' + newnet + '"',\
+      #        (ifname != newnet))
+      puts "Hello ;)"
+      #end 
+    end
+    notifies :reload, "ohai[net_reload]", :immediately
+    # only_if newnet != nil
+  end
+
+
 
  end
