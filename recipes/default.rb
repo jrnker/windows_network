@@ -37,7 +37,6 @@ if platform?("windows")
 
   ohai "net_reload" do
     action :nothing
-    plugin "network"
   end
 
   ruby_block "bla" do
