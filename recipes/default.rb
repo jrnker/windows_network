@@ -32,7 +32,7 @@ if platform?("windows")
   include_recipe 'windows_network::setInterfaceName' if node['windows_network']['setInterfaceName'] == true 
   
   ohai "reload_net" do
-    action :reload
+    action :nothing
     plugin "network"
     only_if {$nodeUpdated}
   end.run_action(:reload)
