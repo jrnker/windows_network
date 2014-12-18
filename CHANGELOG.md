@@ -2,6 +2,10 @@
 
 This file is used to list changes made in each version of sbp_win_ip.
 
+0.2.3
+-----
+- jrnker - Added Ohai relead if network settings changed during run. This means that the node's changed attributes will be reflected in the rest of the run. 
+
 0.2.2
 -----
 - jrnker - Listened to foodcritic.
