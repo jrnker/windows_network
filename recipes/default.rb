@@ -35,7 +35,7 @@ if platform?("windows")
     action :reload
     plugin "network"
     only_if {$nodeUpdated}
-  end.run_action(:reload_net)
+  end.run_action(:reload)
 
 
 
