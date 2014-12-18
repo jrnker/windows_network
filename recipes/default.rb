@@ -18,6 +18,7 @@ if platform?("windows")
   $env_att_name = node['windows_network']['env_att_name']
   $datatype = node['windows_network']['datatype'] 
   $getfirstconfig = false
+  $nodeUpdated = false
   linfo("databag_name #{$databag_name}")
   linfo("env_att_name #{$env_att_name}")
   linfo("datatype #{$datatype}")
@@ -30,27 +31,12 @@ if platform?("windows")
   include_recipe 'windows_network::setInterfaceIP' if node['windows_network']['setInterfaceIP'] == true 
   include_recipe 'windows_network::setInterfaceName' if node['windows_network']['setInterfaceName'] == true 
   
-  # ohai 'chef' do
-  #   action :reload
-  #   not_if $nodeUpdated == false
-  # end
+  ohai "reload_net" do
+    action :reload
+    plugin "network"
+    only_if {$nodeUpdated}
+  end.run_action(:reload_net)
 
-  ohai "net_reload" do
-    action :nothing
-  end
-
-  ruby_block "bla" do
-    block do 
-      #if (newnet != nil) 
-      # doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\
-      #        'netsh interface set interface name="' + ifname +'" newname="' + newnet + '"',\
-      #        (ifname != newnet))
-      puts "Hello ;)"
-      #end 
-    end
-    notifies :reload, "ohai[net_reload]", :immediately
-    # only_if newnet != nil
-  end
 
 
 
