@@ -30,14 +30,13 @@ if_keys.each do |iface|
   dhcp = node['network']['interfaces'][iface]['configuration']['dhcp_enabled']
   
   dns = Array.new
-  $i = 0
+    $i = 0
   if node['network']['interfaces'][iface]['configuration']['dns_server_search_order'] != nil
     node['network']['interfaces'][iface]['configuration']['dns_server_search_order'].each do |object|
       dns[$i] = object
       $i += 1
     end
-  end
-
+  end  
   ipaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "inet"}.flatten.first
   macaddress = node['network']['interfaces'][iface]['addresses'].to_hash.select {|addr, debug| debug["family"] == "lladdr"}.flatten.first
   dfgw = node['network']['interfaces'][iface]['configuration']['default_ip_gateway']
@@ -50,7 +49,7 @@ if_keys.each do |iface|
   linfo("  dfgw #{dfgw}")
   linfo("  macaddress #{macaddress}")
   linfo("  ipaddress #{ipaddress}")
-  $i = 0
+    $i = 0
   dns.each do |object|
     linfo("  dns[#{$i}] #{dns[$i]}")
     $i += 1
@@ -67,45 +66,68 @@ if_keys.each do |iface|
   if net == nil
     Chef::Log.warn("No configuration found for #{macaddress} in data bag #{$databag_name} #{hostname}. You might want to add it...")
   else 
-    newip = getval("address",net,hostname)
-    newip = nil if !newip.IPAddr? if newip.downcase != "dhcp" if newip != nil
-    newsubnet = getval("netmask",net,hostname)
-    newsubnet = nil if !newsubnet.IPAddr? if newsubnet != nil 
-    newdfgw = getval("gateway",net,hostname)  
-    newdfgw = "" if newdfgw == nil
+	
+	newipdata = getval("address",net,hostname)
+	newip = newipdata.split(",") if newipdata != nil	
+	newsubnetdata = getval("netmask",net,hostname)
+    newsubnet = newsubnetdata.split(",") if newsubnetdata != nil		
+    newdfgwdata = getval("gateway",net,hostname)  
+    newdfgw = newdfgwdata.split(",") if newdfgwdata != nil	
     newdnsdata = getval("dns-nameservers",net,hostname)
     newdns = newdnsdata.split(",") if newdnsdata != nil
     newdnssearch = getval("dns-search",net,hostname) 
     
-    linfo("Node specific values:") 
-    linfo("  net #{net}")
-    linfo("  newip #{newip}")
-    linfo("  newsubnet #{newsubnet}")
-    linfo("  newdfgw #{newdfgw}")
-    linfo("  newdnssearch #{newdnssearch}")
-    $i = 0
-    dns.each do |object|
-      linfo("  newdns[#{$i}] #{newdns[$i]}")
+	if (( newip.length != newsubnet.length) || (newip.length !=newdfgw.length ))		
+		Chef::Log.fatal ("Incomplete multiple address info in data bag #{$databag_name} #{hostname}. Make sure you have the same number of addresses, netmasks and gateways. ip #{newip} sub #{newsubnet} gw #{newdfgw}")		
+		exit
+	end
+	
+	linfo("Node specific values:") 
+	$i = 0
+    newip.each do |object|
+		linfo("  net #{net}")    	
+		linfo("  newip[#{$i}] #{newip[$i]}")
+		linfo("  newsubnet[#{$i}] #{newsubnet[$i]}")
+		linfo("  newdfgw[#{$i}] #{newdfgw[$i]}")
+		linfo("  newdnssearch #{newdnssearch}")
+		$j = 0
+		dns.each do |object|
+			linfo("  newdns[#{$j}] #{newdns[$j]}")
+			$j += 1
+		end
       $i += 1
     end
-
-    if newip != nil  
-      if (newip.downcase == "dhcp") && (dhcp == false) 
-        doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to DHCP on #{ifname}",\
-                 'netsh interface ip set address "' + ifname + '" dhcp')
-        $nodeUpdated = true
-        sleep(5)
-      else
-        if newsubnet != nil
-          doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to #{newip} on #{ifname}",\
-                   'netsh interface ip set address "' + ifname + '" static "' + newip + '" "' + newsubnet + '" "' + newdfgw + '"',\
-                   ((dfgw != newdfgw) && (newip.downcase != "dhcp") || \
-                    (not ipaddress == newip) && (newip.downcase != "dhcp")) || \
-                   (newip.downcase != "dhcp") && (dhcp == true) )
-          $nodeUpdated = true if (newip.downcase != "dhcp") && (dhcp == true) 
-        end
-      end
-    end 
+	
+		if newip[0] != nil  
+		  if (newip[0].downcase == "dhcp") && (dhcp == false) 
+			doaction("Changing ip from DHCP=#{dhcp} #{ipaddress} to DHCP on #{ifname}",\
+					 'netsh interface ip set address "' + ifname + '" dhcp')
+			$nodeUpdated = true
+			sleep(5)
+		  else
+			if newsubnet != nil
+				
+			   doaction("Setting ip from DHCP=#{dhcp} #{ipaddress} to #{newip[0]} on #{ifname}",\
+                   'netsh interface ip set address "' + ifname + '" static "' + newip[0] + '" "' + newsubnet [0]+ '" "' + newdfgw[0] + '"',\
+                   (ipaddress != newip[0]) && (newip[0].downcase != "dhcp")) 
+				if  newip.length > 1
+					$i = 1
+					newip.each do |object|												
+						if (newip[$i] != nil) 
+							doaction("Adding ip #{newip[$i]} on #{ifname}",\
+								'netsh interface ip add address "' + ifname + '" "' + newip[$i] + '" "' + newsubnet [$i]+ '" "' + newdfgw[$i] + '"',\
+								((dfgw != newdfgw) && (newip[$i].downcase != "dhcp") || \
+								(not ipaddress == newip[$i]) && (newip[$i].downcase != "dhcp")) || \
+								(newip[$i].downcase != "dhcp") && (dhcp == true) )
+						end						
+						$i += 1
+					end	   
+				end	   
+					   
+			  $nodeUpdated = true 
+			end
+		  end
+		end 	
   end
 
   ####################################################################################################
