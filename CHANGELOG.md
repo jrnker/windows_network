@@ -2,6 +2,10 @@
 
 This file is used to list changes made in each version of sbp_win_ip.
 
+0.3.0
+-----
+- jrnker - Based on Pull req from rvanderbrugge; implements handling of multiple ip addresses per interface.
+
 0.2.3
 -----
 - jrnker - Added Ohai relead if network settings changed during run. This means that the node's changed attributes will be reflected in the rest of the run. 

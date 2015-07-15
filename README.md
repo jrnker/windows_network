@@ -45,8 +45,8 @@ or for more than one interface:
     {
       "name":     "Local network",
       "mac":      "00:AC:21:BC:F0:E0", 
-      "address":  "10.1.0.123",
-      "netmask":  "255.255.255.0",
+      "address":  "10.1.0.123,10.1.0.124",
+      "netmask":  "255.255.255.0,255.255.255.0",
       "gateway":  "10.1.0.1",
       "dns-nameservers": "10.1.0.231,10.111.0.231",
       "dns-search": "mydomain.local"
