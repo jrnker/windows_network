@@ -79,7 +79,7 @@ if_keys.each do |iface|
   	newip = newipdata.split(",") if newipdata != nil	
   	newsubnetdata = getval("netmask",net,hostname)
     newsubnet = newsubnetdata.split(",") if newsubnetdata != nil		
-    newdfgw = getval("gateway",net,hostname)  
+    newdfgw = getval("gateway",net,hostname)  # Note for datatype 2, that you first need to retrieve IP and subnets first, as these are used later for the defgw
     newdfgw = "" if newdfgw == nil
     newdnsdata = getval("dns-nameservers",net,hostname)
     newdns = newdnsdata.split(",") if newdnsdata != nil
@@ -137,19 +137,19 @@ if_keys.each do |iface|
           newsubnet[0]+ '" "' + \
           newdfgw + \
           '"')
-  	   doaction("Setting ip from DHCP=#{dhcp} #{ipaddresses[0]} to #{newip[0]} on #{ifname}",\
+  	   doaction("Setting ip from DHCP=#{dhcp} #{ipaddresses[0]} to #{newip[0]} #{newsubnet[0]} #{newdfgw} on #{ifname}",\
                  'netsh interface ip set address "' + ifname + '" static "' + newip[0] + '" "' + newsubnet[0]+ '" "' + newdfgw + '"',\
                  refreshIp && (newip[0].downcase != "dhcp")) 
   		elsif refreshIp
-        doaction("Setting ip from DHCP=#{dhcp} #{ipaddresses[0]} to #{newip[0]} on #{ifname}",\
+        doaction("Setting ip from DHCP=#{dhcp} #{ipaddresses[0]} to #{newip[0]} #{newsubnet[0]} #{newdfgw} on #{ifname}",\
                  'netsh interface ip set address "' + ifname + '" static "' + newip[0] + '" "' + newsubnet[0]+ '" "' + newdfgw + '"',\
                  (newip[0].downcase != "dhcp"))
   			$i = 1
   			newip.each do |object|												
   				if (newip[$i] != nil) 
             #doaction(infotext,data_cmd,onlyif=true) 
-  					doaction("Adding ip #{newip[$i]} on #{ifname}",\
-  						'netsh interface ip add address "' + ifname + '" "' + newip[$i] + '" "' + newsubnet [$i]+ '"',\
+  					doaction("Adding ip #{newip[$i]} #{newsubnet[$i]} on #{ifname}",\
+  						'netsh interface ip add address "' + ifname + '" "' + newip[$i] + '" "' + newsubnet[$i]+ '"',\
               (newip[$i].downcase != "dhcp"))
   				end						
   				$i += 1

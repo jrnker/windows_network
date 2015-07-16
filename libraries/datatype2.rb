@@ -79,14 +79,23 @@ def getval2(group,item,hostname)
                 when "gateway"
                         #This will only work if ip/mask has been asked for this nic prior to this statement 
                         if !defined?($dt2ip).nil? && !defined?($dt2netmask).nil? 
-                                return nil if !$dt2ip.IPAddr? || !$dt2netmask.IPAddr?
-                                dfgw = datab['def_gw']  
-                                net = IPAddr.new("#{$dt2ip}/#{$dt2netmask}") 
-                                if net===dfgw 
-                                        return dfgw
-                                else 
-                                        return nil
-                                end
+                                return nil if $dt2ip.split(",").length != $dt2netmask.split(",").length 
+                                        i=0
+                                        $dt2ip.split(",").each do |ip|
+                                        ipa=$dt2ip.split(",")[i]
+                                        nm=$dt2netmask.split(",")[i]
+                                        if ipa.IPAddr? && nm.IPAddr?
+                                                dfgw = datab['def_gw']  
+                                                net = IPAddr.new("#{ipa}/#{nm}") 
+                                                if net===dfgw 
+                                                        return dfgw
+                                                else 
+                                                        return nil
+                                                end
+                                        end
+                                        i+=1
+                                end 
+                                return nil
                         end
         end
 
