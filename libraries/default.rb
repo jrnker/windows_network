@@ -48,10 +48,10 @@ end
 
 
 def linfo(data)
-        if $showlog != nil
+        if $showlog == true
                 puts(data)
         else
-                #Chef::Log.info(data)
+                Chef::Log.debug(data)
         end
 end
 
