@@ -9,6 +9,7 @@
 # Christoffer Järnåker, Schuberg Philis, 2014
 #
 
+$showlog = node['windows_network']['showlog']
 ####################################################################################################
 ### Check and update network interfacess ip configuration                                        ###
 ####################################################################################################
@@ -21,7 +22,7 @@ linfo("Actual interface count: #{if_keyscount}")
 if if_keyscount == 1 and getnetcount == 1
   $getfirstconfig = "true"
 end
-$showlog=true
+
 # Iterate through all network interfaces
 if_keys.each do |iface|
 
@@ -29,12 +30,10 @@ if_keys.each do |iface|
   ifname = node['network']['interfaces'][iface]['instance']['net_connection_id']
   dhcp = node['network']['interfaces'][iface]['configuration']['dhcp_enabled']
   
-  dns = Array.new
-  $i = 0
+  dns = Array.new 
   if node['network']['interfaces'][iface]['configuration']['dns_server_search_order'] != nil
     node['network']['interfaces'][iface]['configuration']['dns_server_search_order'].each do |object|
-      dns[$i] = object
-      $i += 1
+      dns.push(object) 
     end
   end  
 
@@ -52,17 +51,17 @@ if_keys.each do |iface|
   dfgw = "" if dfgw == nil
 
   linfo("Node based values:")
-  linfo("  iface #{iface}")
-  linfo("  ifname #{ifname}")
-  linfo("  dfgw #{dfgw}")
-  linfo("  macaddress #{macaddress}")
-  linfo("  ipaddresses #{ipaddresses}")
+  linfo("  iface '#{iface}'")
+  linfo("  ifname '#{ifname}'")
+  linfo("  dfgw '#{dfgw}'")
+  linfo("  macaddress '#{macaddress}'")
+  linfo("  ipaddresses '#{ipaddresses}'")
   $i = 0
   dns.each do |object|
-    linfo("  dns[#{$i}] #{dns[$i]}")
+    linfo("  dns[#{$i}] '#{dns[$i]}'")
     $i += 1
   end 
-  linfo("  dhcp #{dhcp}")
+  linfo("  dhcp '#{dhcp}'")
 
   # We first get the network name and put it in 'net', and then use this to retrieve the settings
   #
@@ -90,14 +89,14 @@ if_keys.each do |iface|
   	end
   	
   	linfo("Node specific values:")  
-  	linfo("  net #{net}")    	
-  	linfo("  newip #{newip}")
-  	linfo("  newsubnet #{newsubnet}")
-  	linfo("  newdfgw #{newdfgw}")
-  	linfo("  newdnssearch #{newdnssearch}")
+  	linfo("  net '#{net}'")    	
+  	linfo("  newip '#{newip}'")
+  	linfo("  newsubnet '#{newsubnet}'")
+  	linfo("  newdfgw '#{newdfgw}'")
+  	linfo("  newdnssearch '#{newdnssearch}'")
   	$j = 0
   	dns.each do |object|
-  		linfo("  newdns[#{$j}] #{newdns[$j]}")
+  		linfo("  newdns[#{$j}] '#{newdns[$j]}'")
   		$j += 1
   	end 
 
@@ -119,7 +118,7 @@ if_keys.each do |iface|
     #Compare default gateway
     refreshIp = true if dfgw != newdfgw
 
-    linfo("  refreshIp #{refreshIp}")
+    linfo("  refreshIp '#{refreshIp}'")
     #return
 
    
@@ -178,10 +177,10 @@ if_keys.each do |iface|
   end
 
   linfo("Environment wide values:")
-  linfo("  wd_DomainDNSName #{wd_DomainDNSName}") 
+  linfo("  wd_DomainDNSName '#{wd_DomainDNSName}'") 
   $i = 0
   wd_dns.each do |object|
-    linfo("  wd_dns[#{$i}] #{wd_dns[$i]}")
+    linfo("  wd_dns[#{$i}] '#{wd_dns[$i]}'")
     $i += 1
   end 
 
@@ -203,11 +202,7 @@ if_keys.each do |iface|
   end    
 
   linfo("We consider these to be the best DNS's to use:")  
-  $i = 0
-  bestdns.each do |object|
-    linfo("  bestdns[#{$i}] #{bestdns[$i]}")
-    $i += 1
-  end
+  linfo("  bestdns[#{$i}] '#{bestdns}'")
 
   # Get some local info
   mac = macaddress.upcase
@@ -220,26 +215,38 @@ if_keys.each do |iface|
   end
 
   linfo("Values from actual system:") 
-  $i = 0
-  dns.each do |object|
-    linfo("  actualdns[#{$i}] #{actualdns[$i]}")
-    $i += 1
-  end
-  linfo("  actualdnssuffix #{actualdnssuffix}")
-  linfo("  actualdhcp #{actualdhcp}")
+  linfo("  actualdns[#{$i}] #{actualdns}")
+  linfo("  actualdnssuffix '#{actualdnssuffix}'")
+  linfo("  actualdhcp '#{actualdhcp}'")
 
   # Compare the best and actual values, and if different set dns. Maximum of three DNS's
-  $i = 0
-  while $i < 2 do
-    if (actualdns[$i] != bestdns[$i]) && (bestdns[$i] != nil)
-      updatedns = "true"
-    end
-    $i += 1
-  end
+  # $i = 0
+  # while $i < 2 do
+  #   if (actualdns[$i] != bestdns[$i]) && (bestdns[$i] != nil)
+  #     updatedns = "true"
+  #   end
+  #   $i += 1
+  # end
 
+  #Compare DNS's
+  refreshDNS = false
+  if bestdns.length == actualdns.length
+    $i=0
+    bestdns.each do |i| 
+      found = false
+      actualdns.each do |v|
+        found = true if v == bestdns[$i]
+      end
+      refreshDNS = true if !found
+      $i+=1
+    end
+  else
+    refreshDNS = true
+  end
+  
   # Okay, let's set the dns values
-  linfo("updatedns #{updatedns}")
-  if updatedns == "true"
+  linfo("refreshDNS '#{refreshDNS}'")
+  if refreshDNS == true
     $nodeUpdated = true
     $i = 0
     bestdns.each do |object|

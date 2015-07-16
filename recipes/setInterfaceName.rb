@@ -19,11 +19,12 @@ if_keys.each do |iface|
   mac = macaddress.upcase
 
   ifname = r_d('powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapter | where{$_.MacAddress -eq """' + mac + '"""}).NetconnectionId"')
+  ifname = ifname.gsub(/\n/,"").gsub(/\r/,"") 
   newnet = getnetname(macaddress,hostname,$getfirstconfig) 
 
   linfo("Network names:")
-  linfo("  ifname #{ifname}")
-  linfo("  newnet #{newnet}")
+  linfo("  ifname '#{ifname}'")
+  linfo("  newnet '#{newnet}'")
 
   if (newnet != nil) 
     doaction("Renaming \"#{ifname}\" to \"#{newnet}\"",\

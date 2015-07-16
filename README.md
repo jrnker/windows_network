@@ -31,7 +31,7 @@ It also uses win_domain for fallback information.
   ]
 }
 ``` 
-or for more than one interface:
+or for more than one interface: (here with multipe ip's)
 
 ```
 {
