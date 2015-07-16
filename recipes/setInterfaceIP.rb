@@ -33,7 +33,7 @@ if_keys.each do |iface|
   dns = Array.new 
   if node['network']['interfaces'][iface]['configuration']['dns_server_search_order'] != nil
     node['network']['interfaces'][iface]['configuration']['dns_server_search_order'].each do |object|
-      dns.push(object) 
+      dns.push(object.gsub(/\n/,"").gsub(/\r/,"") ) 
     end
   end  
 
@@ -93,12 +93,8 @@ if_keys.each do |iface|
   	linfo("  newip '#{newip}'")
   	linfo("  newsubnet '#{newsubnet}'")
   	linfo("  newdfgw '#{newdfgw}'")
-  	linfo("  newdnssearch '#{newdnssearch}'")
-  	$j = 0
-  	dns.each do |object|
-  		linfo("  newdns[#{$j}] '#{newdns[$j]}'")
-  		$j += 1
-  	end 
+  	linfo("  newdnssearch '#{newdnssearch}'") 
+  	linfo("  newdns[#{$j}] '#{newdns}'") 
 
     #Compare ipaddress and subnets lengths
     refreshIp = false
@@ -171,18 +167,14 @@ if_keys.each do |iface|
   if node.attribute?($env_att_name)
     # Now, let's get the environment wide DNS settings
     wd_DomainDNSName = node[$env_att_name]['DomainDNSName']
-    wd_dns[0] = node[$env_att_name]['DNS1']
-    wd_dns[1] = node[$env_att_name]['DNS2']
-    wd_dns[2] = node[$env_att_name]['DNS3'] 
+    wd_dns.push(node[$env_att_name]['DNS1']) if node[$env_att_name]['DNS1'] != "" || node[$env_att_name]['DNS1'] == nil
+    wd_dns.push(node[$env_att_name]['DNS2']) if node[$env_att_name]['DNS2'] != "" || node[$env_att_name]['DNS2'] == nil
+    wd_dns.push(node[$env_att_name]['DNS3']) if node[$env_att_name]['DNS3'] != "" || node[$env_att_name]['DNS3'] == nil
   end
 
   linfo("Environment wide values:")
-  linfo("  wd_DomainDNSName '#{wd_DomainDNSName}'") 
-  $i = 0
-  wd_dns.each do |object|
-    linfo("  wd_dns[#{$i}] '#{wd_dns[$i]}'")
-    $i += 1
-  end 
+  linfo("  wd_DomainDNSName '#{wd_DomainDNSName}'")  
+  linfo("  wd_dns '#{wd_dns}'") 
 
   bestdns = Array.new
 
@@ -210,23 +202,21 @@ if_keys.each do |iface|
   actualdnssuffix = registry_get_values("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\Tcpip\\Parameters").find_all{|item| item[:name] == "SearchList"}[0][:data]
   actualdhcpdata =  r_d('powershell -noprofile -command "(Get-WmiObject Win32_NetworkAdapterConfiguration | where{$_.MacAddress -eq """' + mac + '"""}).DHCPEnabled"')
 
+  # Nasty fix for a problem in another cookbook with conflicting functions, in windows_rdp 0.1.1
+  $i=0
+  actualdns.each do |d|
+    actualdns[$i] = actualdns[$i].gsub(/\n/,"").gsub(/\r/,"") 
+    $i += 1
+  end
+
   if actualdhcpdata != nil
     actualdhcp = actualdhcpdata.downcase
   end
 
   linfo("Values from actual system:") 
-  linfo("  actualdns[#{$i}] #{actualdns}")
+  linfo("  actualdns #{actualdns}")
   linfo("  actualdnssuffix '#{actualdnssuffix}'")
   linfo("  actualdhcp '#{actualdhcp}'")
-
-  # Compare the best and actual values, and if different set dns. Maximum of three DNS's
-  # $i = 0
-  # while $i < 2 do
-  #   if (actualdns[$i] != bestdns[$i]) && (bestdns[$i] != nil)
-  #     updatedns = "true"
-  #   end
-  #   $i += 1
-  # end
 
   #Compare DNS's
   refreshDNS = false

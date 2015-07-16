@@ -9,7 +9,7 @@
 # Christoffer Järnåker, Schuberg Philis, 2014
 
 # Output more data to screen
-default['windows_network']['showlog'] = true 
+default['windows_network']['showlog'] = false 
 
 # Specify which data bag will contain the interface information
 default['windows_network']['databag_name'] = "servers" 

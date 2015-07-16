@@ -9,10 +9,9 @@
 # Christoffer Järnåker, Schuberg Philis, 2014
 #
 
-$showlog = node['windows_network']['showlog']
 
-if platform?("windows")
- 
+if platform?("windows") 
+  
   ####################################################################################################
   ### Check and load prerequisite attributes                                                       ###
   ####################################################################################################
