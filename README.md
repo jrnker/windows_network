@@ -5,6 +5,37 @@ This cookbook will configure the network interfaces on Windows
 It looks into a databag for IP information and sets it if it's not set as specified.
 It supports two different formats to store the IP configuration, to support logical and the 'udev' (a proprietary) format.
 
+Resource/Provider
+=================
+
+`dnsserver`
+-----------
+
+NOTE: Windows Server 2012 is currently the only supported platform
+
+### Actions
+
+- :set: sets a dnsserver address for an adapter
+
+### Attribute Parameters
+- name: name attribute. Name of the interface. Example: "Local Area Connection"
+- server_addresses: IPv4 address of dns server. NOTE: Single value, mutliple dns servers are not currently supported.
+- address_family: Specifies the address family. The acceptable values for this parameter are: IPv4 or IPv6.
+- reset_server_addresses: Boolean Resets the DNS server IP addresses to the default value.
+
+### Examples
+
+# Set dns server to 8.8.4.4 for interface Ethernet
+windows_network_dnsserver 'Ethernet' do
+  action :set
+  server_addresses "8.8.4.4"
+end
+
+# Reset dns server for the interface Local Area Connection
+windows_network_dnsserver 'Local Area Connection' do
+  reset_server_addresses true
+end
+
 Requirements
 ------------
 
@@ -175,6 +206,8 @@ Authors:
 Christoffer Järnåker, Proxmea BV
 
 Christoffer Järnåker, Schuberg Philis, 2014
+
+Derek Groh
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
