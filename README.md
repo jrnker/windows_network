@@ -5,6 +5,8 @@ This cookbook will configure the network interfaces on Windows
 It looks into a databag for IP information and sets it if it's not set as specified.
 It supports two different formats to store the IP configuration, to support logical and the 'udev' (a proprietary) format.
 
+Now with LWRP support for those one offs, like vagrant.
+
 Resource/Provider
 =================
 
@@ -25,16 +27,16 @@ NOTE: Windows Server 2012 is currently the only supported platform
 
 ### Examples
 
-# Set dns server to 8.8.4.4 for interface Ethernet
-windows_network_dnsserver 'Ethernet' do
-  action :set
-  server_addresses "8.8.4.4"
-end
+    # Set dns server to 8.8.4.4 for interface Ethernet
+    windows_network_dnsserver 'Ethernet' do
+      action :set
+      server_addresses "8.8.4.4"
+    end
 
-# Reset dns server for the interface Local Area Connection
-windows_network_dnsserver 'Local Area Connection' do
-  reset_server_addresses true
-end
+    # Reset dns server for the interface Local Area Connection
+    windows_network_dnsserver 'Local Area Connection' do
+      reset_server_addresses true
+    end
 
 Requirements
 ------------
