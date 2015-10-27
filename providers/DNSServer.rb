@@ -7,10 +7,10 @@ require 'mixlib/shellout'
 
 action :set do
   if node['os_version'] >= "6.2"
-    if exists?
+    if exists_2012?
       Chef::Log.info("\"#{new_resource.name}\" found - attempting to set the dns server.")
       new_resource.updated_by_last_action(true)
-      if set?
+      if set_2012?
         Chef::Log.info("\"#{new_resource.server_addresses}\" is already set as a DNS Server - nothing to do.")
         new_resource.updated_by_last_action(false)
       else
@@ -30,16 +30,47 @@ action :set do
       new_resource.updated_by_last_action(false)
     end
   else
-    Chef::Log.error("#{node['os_version']} is not currently supported")
+    if exists_2008?
+      Chef::Log.info("\"#{new_resource.name}\" found - attempting to set the dns server.")
+      new_resource.updated_by_last_action(true)
+      if set_2008?
+        Chef::Log.info("\"#{new_resource.server_addresses}\" is already set as a DNS Server - nothing to do.")
+        new_resource.updated_by_last_action(false)
+      else
+        cmd = "netsh interface"
+        cmd << " #{new_resource.address_family}"
+        cmd << " add dnsserver" 
+        cmd << " \"#{new_resource.name}\""
+        cmd << " #{new_resource.server_addresses}"
+        powershell_script "#{new_resource.name}_set_dns_server" do
+          code cmd
+        end
+        Chef::Log.info("\"#{new_resource.server_addresses}\" has been set as the DNS Server.")
+        new_resource.updated_by_last_action(true)  
+      end
+    else
+      Chef::Log.info("\"#{new_resource.name}\" was not found - nothing to do.")
+      new_resource.updated_by_last_action(false)
+    end
   end
 end
 
-def exists?
-  check = Mixlib::ShellOut.new("powershell.exe -command Get-DnsClientServerAddress -InterfaceAlias \"#{new_resource.name}\" -AddressFamily #{new_resource.address_family} -ErrorAction SilentlyContinue").run_command 
+def exists_2008?
+  check = Mixlib::ShellOut.new("powershell.exe -command netsh interface #{new_resource.address_family} show interfaces").run_command
+  check.stdout.match(new_resource.name)
+end
+
+def exists_2012?
+  check = Mixlib::ShellOut.new("powershell.exe -command Get-DnsClientServerAddress -InterfaceAlias \"#{new_resource.name}\" -AddressFamily #{new_resource.address_family} -ErrorAction SilentlyContinue").run_command
   !check.stdout.match("ObjectNotFound")
 end
 
-def set?
+def set_2008?
+  check = Mixlib::ShellOut.new("powershell.exe -command netsh interface #{new_resource.address_family} show dns name=\"#{new_resource.name}\"").run_command
+  check.stdout.match(new_resource.server_addresses)
+end
+
+def set_2012?
   check = Mixlib::ShellOut.new("powershell.exe -command Get-DnsClientServerAddress -InterfaceAlias \"#{new_resource.name}\" -AddressFamily #{new_resource.address_family}").run_command 
-  check.stdout.match("#{new_resource.server_addresses}")
+  check.stdout.match(new_resource.server_addresses)
 end
