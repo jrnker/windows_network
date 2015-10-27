@@ -29,7 +29,6 @@ Resource/Provider
     windows_network_dnsserver 'Ethernet' do
       action :set
       server_addresses "192.168.1.1"
-    end
 
     # Reset dns server for the interface Local Area Connection
     windows_network_dnsserver 'Local Area Connection' do
